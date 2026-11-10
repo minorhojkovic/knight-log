@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>VISITORS_LOG // THE ROARING KNIGHT</title>
+<style>
+/* Страница намеренно тёмная (в стиле профиля): светлой темы нет, токены заданы для обеих схем одинаково */
+:root { --bg: #020204; --panel: #0b0510; --ink: #ffffff; --dim: #a68bb8; --red: #ff0033; --red2: #ff1a4b; --violet: #b829ff; --line: rgba(255,255,255,0.35);
+  box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #020204; --ink: #ffffff; } }
+:root[data-theme="dark"] { --bg: #020204; --ink: #ffffff; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Courier New', monospace; }
+body { min-height: 100vh; background: radial-gradient(circle at 50% 0%, #1a0630 0%, var(--bg) 60%); }
+body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 50; background: linear-gradient(rgba(255,255,255,0) 50%, rgba(0,0,0,0.28) 50%); background-size: 100% 4px; }
+.wrap { max-width: 920px; margin: 0 auto; padding: 22px 14px 60px; }
+.box { background: linear-gradient(160deg, #07040c 0%, #190410 65%, #120422 100%); border: 1.5px solid #fff; padding: 14px 16px; margin-bottom: 16px;
+  box-shadow: 0 0 5px #fff, 0 0 16px rgba(255,255,255,0.7), 0 0 34px rgba(255,40,90,0.45), inset 0 0 18px rgba(180,0,80,0.25); }
+h1 { margin: 0 0 4px; font-size: 1.15rem; letter-spacing: 2px; text-shadow: 0 0 8px #ff0033; }
+.sub { color: var(--dim); font-size: 0.78rem; }
+.demo { border: 1px dashed #ffcc00; color: #ffcc00; padding: 6px 10px; margin-bottom: 12px; font-size: 0.74rem; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+button, select, textarea { font: inherit; color: var(--ink); background: #040207; border: 1px solid rgba(255,255,255,0.55); border-radius: 0; }
+button { padding: 6px 12px; cursor: pointer; letter-spacing: 1px; }
+button:hover:not(:disabled) { background: rgba(255,0,51,0.3); box-shadow: 0 0 10px #ff0033; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+.primary { border-color: var(--red); box-shadow: 0 0 8px rgba(255,0,51,0.5); }
+select { padding: 6px 8px; }
+textarea { width: 100%; min-height: 78px; padding: 8px; resize: vertical; }
+textarea:focus, select:focus, button:focus-visible { outline: none; box-shadow: 0 0 10px #ff0033; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.row label { font-size: 0.78rem; color: var(--dim); display: flex; gap: 6px; align-items: center; }
+.cnt { margin-left: auto; font-size: 0.72rem; color: var(--dim); }
+.msg { min-height: 1.2em; font-size: 0.8rem; color: #ffcc00; margin: 0 0 10px; }
+.msg.err { color: var(--red2); }
+.locked { color: var(--dim); font-size: 0.82rem; }
+.entry { border: 1px solid rgba(255,255,255,0.25); background: rgba(4,2,7,0.9); padding: 10px 12px; margin-bottom: 12px; }
+.entry.reply { margin: 10px 0 0 14px; background: rgba(12,4,20,0.9); }
+.entry.owner { border: 2px solid var(--red); background: linear-gradient(160deg, rgba(120,0,25,0.55), rgba(25,3,12,0.95)); box-shadow: 0 0 12px rgba(255,0,51,0.6), inset 0 0 18px rgba(255,0,51,0.2); padding: 14px 16px; }
+.entry.owner .ebody { font-size: 1.12rem; font-weight: bold; color: #fff; text-shadow: 0 0 8px rgba(255,0,51,0.8); }
+.ehead { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
+.ava { width: 28px; height: 28px; flex: none; border: 1px solid #fff; background: #1a0630; display: grid; place-items: center; font-size: 0.8rem; overflow: hidden; }
+.ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.owner .ava { width: 36px; height: 36px; border-color: var(--red); }
+.ename { font-weight: bold; }
+.owner .ename { color: var(--red2); font-size: 1.05rem; }
+.tag { font-size: 0.64rem; border: 1px solid var(--red); color: var(--red2); padding: 0 5px; letter-spacing: 1px; }
+.tag.dim { border-color: var(--dim); color: var(--dim); }
+.edate { color: var(--dim); font-size: 0.72rem; }
+.ebody { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.4; font-size: 0.92rem; }
+.acts { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.vote { display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(255,255,255,0.3); padding: 0 4px; }
+.vote button { border: 0; background: transparent; padding: 2px 6px; }
+.vote button.on-up { color: #33ff66; text-shadow: 0 0 6px #33ff66; }
+.vote button.on-down { color: var(--red2); text-shadow: 0 0 6px var(--red); }
+.vote b { min-width: 2.2ch; text-align: center; font-size: 0.85rem; }
+.vote b.pos { color: #33ff66; } .vote b.neg { color: var(--red2); }
+.lnk { border: 0; background: transparent; color: var(--violet); padding: 2px 4px; font-size: 0.78rem; }
+.lnk.del { color: var(--red2); }
+.composer { margin-top: 10px; }
+.empty { text-align: center; color: var(--dim); padding: 24px; }
+@media (max-width: 600px) { .entry.reply { margin-left: 6px; } .wrap { padding: 14px 8px 50px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="box">
+    <h1>&gt;&gt; VISITORS_LOG // GUESTBOOK [v.200X]</h1>
+    <div class="sub">Leave one entry. Sign in with Discord first: your nickname is taken from your account, not typed by hand.</div>
+  </div>
+  <div id="demo"></div>
+  <div class="box"><div class="bar" id="userbar"></div></div>
+  <div class="box" id="composerbox"></div>
+  <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  <div class="bar" style="margin-bottom:12px">
+    <span class="sub" id="count"></span>
+    <label class="sub">SORT: <select id="sort">
+      <option value="new">Newest first</option>
+      <option value="old">Oldest first</option>
+      <option value="top">Highest rated</option>
+      <option value="worst">Lowest rated</option>
+    </select></label>
+  </div>
+  <div id="list"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  /* ===== НАСТРОЙКА: впиши данные своего проекта Supabase. Пока пусто — страница работает в демо-режиме. ===== */
+  var CONFIG = { SUPABASE_URL: '', SUPABASE_ANON_KEY: '', OWNER_LABEL: 'EvilFountainOpener', MAX_LEN: 1000 };
+  var MOCK = !CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY;
+
+  function h(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (k === 'class') n.className = v;
+      else if (k === 'text') n.textContent = v;
+      else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), v);
+      else if (v !== false && v != null) n.setAttribute(k, v === true ? '' : v);
+    });
+    (kids || []).forEach(function (c) { if (c == null || c === false) return; n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function fmt(iso) { var d = new Date(iso); function p(x) { return (x < 10 ? '0' : '') + x; } return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); }
+
+  /* ================= ДЕМО-РЕЖИМ (данные в памяти) ================= */
+  function makeMock() {
+    var me = null, now = Date.now(), day = 864e5, votes = {}, seq = 10;
+    var db = [
+      { id: 'e1', parent_id: null, uid: 'owner', body: 'THE LOG IS OPEN. ONE ENTRY PER VISITOR. DO NOT WASTE IT.', created_at: new Date(now - 6 * day).toISOString(), is_owner: true, is_anonymous: false, author_name: CONFIG.OWNER_LABEL },
+      { id: 'e2', parent_id: null, uid: 'u2', body: 'Frisk was cooler than Chara', created_at: new Date(now - 3 * day).toISOString(), is_owner: false, is_anonymous: false, author_name: 'Itz_Kris_Dreemurr' },
+      { id: 'e3', parent_id: null, uid: 'u3', body: 'my ahh waiting for the other scenarios', created_at: new Date(now - 2 * day).toISOString(), is_owner: false, is_anonymous: false, author_name: 'KrisDreemurrpuppyl0ver' },
+      { id: 'e4', parent_id: null, uid: 'u4', body: 'do you like feet', created_at: new Date(now - 1 * day).toISOString(), is_owner: false, is_anonymous: true, author_name: 'Gugugaga123654' },
+      { id: 'e5', parent_id: 'e3', uid: 'u5', body: 'same.', created_at: new Date(now - 1.5 * day).toISOString(), is_owner: false, is_anonymous: false, author_name: 'Yelloarrow' },
+      { id: 'e6', parent_id: 'e3', uid: 'owner', body: 'PATIENCE.', created_at: new Date(now - 1.2 * day).toISOString(), is_owner: true, is_anonymous: false, author_name: CONFIG.OWNER_LABEL }
+    ];
+    ['u6', 'u7', 'u8'].forEach(function (u, i) { votes['e2|' + u] = 1; if (i < 2) votes['e3|' + u] = 1; votes['e4|' + u] = -1; });
+    function score(id) { var s = 0; Object.keys(votes).forEach(function (k) { if (k.split('|')[0] === id) s += votes[k]; }); return s; }
+    function pub(e) { return { id: e.id, parent_id: e.parent_id, body: e.body, created_at: e.created_at, is_owner: e.is_owner, is_anonymous: e.is_anonymous,
+      author_name: e.is_anonymous ? null : e.author_name, author_avatar: null, score: score(e.id), mine: !!me && e.uid === me.id }; }
+    var api = {
+      mock: true,
+      init: function (cb) { cb(); },
+      user: function () { return me; },
+      login: function () { me = { id: 'demo', name: 'DemoVisitor', owner: false }; return Promise.resolve(); },
+      loginOwner: function () { me = { id: 'owner', name: CONFIG.OWNER_LABEL, owner: true }; return Promise.resolve(); },
+      logout: function () { me = null; return Promise.resolve(); },
+      list: function () { return Promise.resolve(db.map(pub)); },
+      myVotes: function () { var r = {}; if (me) db.forEach(function (e) { var v = votes[e.id + '|' + me.id]; if (v) r[e.id] = v; }); return Promise.resolve(r); },
+      post: function (o) {
+        if (!me) return Promise.reject({ message: 'LOGIN' });
+        if (!o.parent_id && !me.owner && db.some(function (e) { return !e.parent_id && e.uid === me.id; })) return Promise.reject({ code: '23505' });
+        db.push({ id: 'n' + (seq++), parent_id: o.parent_id || null, uid: me.id, body: o.body, created_at: new Date().toISOString(), is_owner: me.owner, is_anonymous: me.owner ? false : !!o.anon, author_name: me.name });
+        return Promise.resolve();
+      },
+      vote: function (id, v) {
+        if (!me) return Promise.reject({ message: 'LOGIN' });
+        var e = db.filter(function (x) { return x.id === id; })[0];
+        if (e && e.is_owner) return Promise.reject({ message: 'owner entries cannot be voted' });
+        if (v === 0) delete votes[id + '|' + me.id]; else votes[id + '|' + me.id] = v;
+        return Promise.resolve();
+      },
+      del: function (id) { db = db.filter(function (e) { return e.id !== id && e.parent_id !== id; }); return Promise.resolve(); }
+    };
+    return api;
+  }
+
+  /* ================= SUPABASE ================= */
+  function makeReal() {
+    var client = null, session = null, ownerFlag = false;
+    function meta() { return (session && session.user && session.user.user_metadata) || {}; }
+    function refreshOwner() {
+      if (!session) { ownerFlag = false; return Promise.resolve(); }
+      return client.rpc('is_owner').then(function (r) { ownerFlag = r.data === true; });
+    }
+    var api = {
+      mock: false,
+      init: function (cb) {
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+        s.onerror = function () { cb(new Error('Could not load the Supabase library')); };
+        s.onload = function () {
+          client = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+          client.auth.getSession().then(function (r) { session = r.data.session; return refreshOwner(); }).then(function () { cb(); });
+          client.auth.onAuthStateChange(function (_e, s2) { session = s2; refreshOwner().then(function () { if (api.onchange) api.onchange(); }); });
+        };
+        document.head.appendChild(s);
+      },
+      user: function () { if (!session) return null; var m = meta(); return { id: session.user.id, name: ownerFlag ? CONFIG.OWNER_LABEL : (m.full_name || m.name || m.user_name || 'user'), owner: ownerFlag }; },
+      login: function () { return client.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: location.origin + location.pathname } }); },
+      logout: function () { return client.auth.signOut(); },
+      list: function () { return client.from('entries_public').select('*').order('created_at', { ascending: false }).limit(1000).then(function (r) { if (r.error) throw r.error; return r.data; }); },
+      myVotes: function () {
+        if (!session) return Promise.resolve({});
+        return client.from('votes').select('entry_id,value').then(function (r) { var o = {}; (r.data || []).forEach(function (x) { o[x.entry_id] = x.value; }); return o; });
+      },
+      post: function (o) { return client.from('entries').insert({ body: o.body, parent_id: o.parent_id || null, is_anonymous: !!o.anon }).then(function (r) { if (r.error) throw r.error; }); },
+      vote: function (id, v) {
+        var q = v === 0 ? client.from('votes').delete().eq('entry_id', id) : client.from('votes').upsert({ entry_id: id, value: v }, { onConflict: 'entry_id,user_id' });
+        return q.then(function (r) { if (r.error) throw r.error; });
+      },
+      del: function (id) { return client.from('entries').delete().eq('id', id).then(function (r) { if (r.error) throw r.error; }); }
+    };
+    return api;
+  }
+
+  /* ================= ИНТЕРФЕЙС ================= */
+  var api = MOCK ? makeMock() : makeReal();
+  var state = { sort: 'new', open: {}, replyTo: null, votes: {}, entries: [] };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function say(text, isErr) { var m = $('msg'); m.textContent = text || ''; m.className = 'msg' + (isErr ? ' err' : ''); }
+  function explain(e) {
+    var t = (e && (e.code || e.message)) || '';
+    if (e && e.code === '23505') return 'You have already left an entry in this log. One per visitor.';
+    if (/LOGIN|login required|JWT/i.test(t)) return 'Sign in with Discord first.';
+    if (/slow down/i.test(t)) return 'Slow down. Wait a few seconds.';
+    if (/owner entries/i.test(t)) return 'The Knight’s entries cannot be voted on.';
+    return 'Error: ' + (e && e.message ? e.message : 'unknown');
+  }
+  function run(p, ok) { say(''); return p.then(function () { if (ok) say(ok); return refresh(); }).catch(function (e) { say(explain(e), true); }); }
+
+  function refresh() {
+    return Promise.all([api.list(), api.myVotes()]).then(function (r) { state.entries = r[0]; state.votes = r[1]; render(); })
+      .catch(function (e) { say(explain(e), true); });
+  }
+
+  function avatar(e) {
+    var box = h('span', { class: 'ava' });
+    if (e.author_avatar && !e.is_anonymous) box.appendChild(h('img', { src: e.author_avatar, alt: '', referrerpolicy: 'no-referrer' }));
+    else box.textContent = e.is_anonymous ? '?' : (e.author_name || '?').charAt(0).toUpperCase();
+    return box;
+  }
+
+  function composer(parentId, prefill) {
+    var ta = h('textarea', { maxlength: String(CONFIG.MAX_LEN), placeholder: parentId ? 'Write a reply…' : 'Write something…' });
+    if (prefill) ta.value = prefill;
+    var anon = h('input', { type: 'checkbox' });
+    var counter = h('span', { class: 'cnt', text: '0/' + CONFIG.MAX_LEN });
+    ta.addEventListener('input', function () { counter.textContent = ta.value.length + '/' + CONFIG.MAX_LEN; });
+    var user = api.user();
+    var kids = [anon, 'Post as Anonymous (your account is still recorded, only the name is hidden)'];
+    var post = h('button', { class: 'primary', text: parentId ? 'POST REPLY' : 'SIGN THE LOG', onclick: function () {
+      var body = ta.value.trim();
+      if (!body) { say('Write something first.', true); return; }
+      post.disabled = true;
+      run(api.post({ body: body, parent_id: parentId, anon: anon.checked }), 'Saved.').then(function () { if (parentId) state.replyTo = null; render(); });
+    } });
+    var row = h('div', { class: 'row' }, [h('label', null, user && user.owner ? [] : kids), counter, post]);
+    if (parentId) row.appendChild(h('button', { text: 'CANCEL', onclick: function () { state.replyTo = null; render(); } }));
+    return h('div', { class: 'composer' }, [ta, row]);
+  }
+
+  function voteBox(e) {
+    if (e.is_owner) return null;
+    var mine = state.votes[e.id] || 0;
+    function click(v) { return function () { if (!api.user()) { say('Sign in with Discord to vote.', true); return; } run(api.vote(e.id, mine === v ? 0 : v)); }; }
+    return h('span', { class: 'vote' }, [
+      h('button', { class: mine === 1 ? 'on-up' : '', title: 'Upvote', 'aria-label': 'Upvote', text: '▲', onclick: click(1) }),
+      h('b', { class: e.score > 0 ? 'pos' : (e.score < 0 ? 'neg' : ''), text: (e.score > 0 ? '+' : '') + e.score }),
+      h('button', { class: mine === -1 ? 'on-down' : '', title: 'Downvote', 'aria-label': 'Downvote', text: '▼', onclick: click(-1) })
+    ]);
+  }
+
+  function entryNode(e, root, replies) {
+    var u = api.user(), isReply = !!e.parent_id;
+    var node = h('div', { class: 'entry' + (e.is_owner ? ' owner' : '') + (isReply ? ' reply' : '') });
+    node.appendChild(h('div', { class: 'ehead' }, [
+      avatar(e),
+      h('span', { class: 'ename', text: '@' + (e.is_anonymous ? 'Anonymous' : (e.author_name || 'unknown')) }),
+      e.is_owner ? h('span', { class: 'tag', text: 'CREATOR' }) : null,
+      (e.mine && e.is_anonymous) ? h('span', { class: 'tag dim', text: 'YOU' }) : null,
+      h('span', { class: 'edate', text: fmt(e.created_at) })
+    ]));
+    node.appendChild(h('div', { class: 'ebody', text: e.body }));
+    var acts = h('div', { class: 'acts' }, [voteBox(e)]);
+    acts.appendChild(h('button', { class: 'lnk', text: 'Reply', onclick: function () {
+      if (!api.user()) { say('Sign in with Discord to reply.', true); return; }
+      state.replyTo = e.id; state.open[root.id] = true; state._prefill = isReply && !e.is_anonymous && e.author_name ? '@' + e.author_name + ' ' : ''; render();
+    } }));
+    if (!isReply && replies.length) {
+      var open = !!state.open[e.id];
+      acts.appendChild(h('button', { class: 'lnk', text: (open ? '▲ Hide replies' : '▼ ' + replies.length + (replies.length === 1 ? ' reply' : ' replies')), onclick: function () { state.open[e.id] = !open; render(); } }));
+    }
+    if (u && (u.owner || e.mine)) acts.appendChild(h('button', { class: 'lnk del', text: '[DEL]', onclick: function () { if (confirm('Delete this entry' + (isReply ? '' : ' and all replies') + '?')) run(api.del(e.id), 'Deleted.'); } }));
+    node.appendChild(acts);
+    if (state.replyTo === e.id) node.appendChild(composer(root.id, state._prefill));
+    return node;
+  }
+
+  function render() {
+    var u = api.user();
+    var bar = $('userbar'); bar.textContent = '';
+    if (u) {
+      bar.appendChild(h('span', null, ['LOGGED IN AS ', h('b', { text: '@' + u.name }), u.owner ? ' [CREATOR]' : '']));
+      bar.appendChild(h('button', { text: 'LOG OUT', onclick: function () { run(api.logout()); } }));
+    } else {
+      bar.appendChild(h('span', { class: 'sub', text: 'Not signed in. You can read everything, but posting and voting need Discord.' }));
+      bar.appendChild(h('button', { class: 'primary', text: 'SIGN IN WITH DISCORD', onclick: function () { run(api.login()); } }));
+    }
+    var cb = $('composerbox'); cb.textContent = '';
+    var hasTop = u && !u.owner && state.entries.some(function (e) { return !e.parent_id && e.mine; });
+    if (!u) cb.appendChild(h('div', { class: 'locked', text: 'Sign in to leave an entry.' }));
+    else if (hasTop) cb.appendChild(h('div', { class: 'locked', text: 'You have already left your entry. One per visitor. You can still reply and vote.' }));
+    else cb.appendChild(composer(null));
+
+    var roots = state.entries.filter(function (e) { return !e.parent_id; });
+    var byParent = {};
+    state.entries.filter(function (e) { return e.parent_id; }).sort(function (a, b) { return new Date(a.created_at) - new Date(b.created_at); })
+      .forEach(function (e) { (byParent[e.parent_id] = byParent[e.parent_id] || []).push(e); });
+    var t = function (e) { return new Date(e.created_at).getTime(); };
+    roots.sort({
+      new: function (a, b) { return t(b) - t(a); }, old: function (a, b) { return t(a) - t(b); },
+      top: function (a, b) { return (b.score - a.score) || (t(b) - t(a)); }, worst: function (a, b) { return (a.score - b.score) || (t(b) - t(a)); }
+    }[state.sort]);
+    $('count').textContent = roots.length + (roots.length === 1 ? ' ENTRY' : ' ENTRIES');
+    var list = $('list'); list.textContent = '';
+    if (!roots.length) list.appendChild(h('div', { class: 'empty', text: 'The log is empty. Be the first.' }));
+    roots.forEach(function (e) {
+      var reps = byParent[e.id] || [];
+      var node = entryNode(e, e, reps);
+      if (reps.length && state.open[e.id]) reps.forEach(function (r) { node.appendChild(entryNode(r, e, [])); });
+      list.appendChild(node);
+    });
+  }
+
+  $('sort').addEventListener('change', function (ev) { state.sort = ev.target.value; render(); });
+  api.onchange = function () { refresh(); };
+  api.init(function (err) {
+    if (err) { say(err.message, true); return; }
+    if (api.mock) {
+      var d = $('demo');
+      d.appendChild(h('div', { class: 'demo' }, ['DEMO MODE: no database connected, data lives in memory only.',
+        h('button', { text: 'demo: act as the Knight', onclick: function () { api.loginOwner().then(refresh); } })]));
+    }
+    refresh();
+  });
+})();
+</script>
+</body>
+</html>
